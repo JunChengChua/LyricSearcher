@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href = "style.css">
+    <!-- <script src="lyrics.js"></script> -->
+</head>
+<body>
+<label for = "song">Song Name</label>
+<input type = "text" id="song" enterkeyhint="Song Name">
+<label for = "artist">Artist</label>
+<input type = "text" id="artist">
+
+<button id = "submit" onclick="setLyrics()">Find Lyrics</button>
+<p>Click the button with an empty entry and get a random song!</p>
+
+<div id="lyrics" ></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function setLyrics() {
+        var artist = document.getElementById('artist');
+        var song = document.getElementById('song');
+        var lyricText = document.getElementById('lyrics');
+        var rawhtml;
+
+        fetch('https://www.lyrics.com/artist/' + artist.value)
+            .then(response => response.text())
+            .then(html => {
+                rawhtml = html;
+                const elements = $.parseHTML(rawhtml);
+                $(elements).find('*').each(function()
+                {
+                    var innerText = $(this).text();
+                    if (innerText.toLowerCase() === song.value.toLowerCase())
+                    {
+                        var newurl = 'https://www.lyrics.com' + $(this).attr('href');
+                        fetch(newurl)
+                            .then(response => response.text())
+                            .then(html => {
+                                rawhtml = html;
+                                const newElements = $.parseHTML(rawhtml);
+                                document.getElementById('lyrics').innerText = newurl + '\n' + $(newElements).find('pre#lyric-body-text').text();
+                            })
+                            .catch(error => {
+                                document.getElementById('lyrics').innerText = "failed";
+                            })
+                    }
+                });
+            })
+            .catch(error => {
+                lyricText.innerText = "failed";
+            });
+    }
+
+
+</script>
+</body>
+</html>
